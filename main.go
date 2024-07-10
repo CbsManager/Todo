@@ -55,16 +55,21 @@ func main() {
 		log.Println(err)
 	}
 }
-
-func removeItem(id string, todos []Todo) []Todo {
-	newList := []Todo{}
-	for _, v := range todos {
-		if v.ID != id {
-			newList = append(newList, v)
-		}
-	}
-	return newList
+func getTodo(ctx *gin.Context) {
+	todos := readJsonFile()
+	ctx.HTML(http.StatusOK, "todos.html", todos)
 }
+
+func addTodo(ctx *gin.Context) {
+	var newTodo Todo
+	if err := ctx.BindJSON(&newTodo); err != nil {
+		return
+	}
+
+	writeJsonFile(newTodo)
+	getTodo(ctx)
+}
+
 func deleteTodo(ctx *gin.Context) {
 	var todo DeleteTodo
 	if err := ctx.BindJSON(&todo); err != nil {
@@ -78,18 +83,14 @@ func deleteTodo(ctx *gin.Context) {
 	getTodo(ctx)
 }
 
-func getTodo(ctx *gin.Context) {
-	todos := readJsonFile()
-	ctx.HTML(http.StatusOK, "todos.html", todos)
-}
-func addTodo(ctx *gin.Context) {
-	var newTodo Todo
-	if err := ctx.BindJSON(&newTodo); err != nil {
-		return
+func removeItem(id string, todos []Todo) []Todo {
+	newList := []Todo{}
+	for _, v := range todos {
+		if v.ID != id {
+			newList = append(newList, v)
+		}
 	}
-
-	writeJsonFile(newTodo)
-	getTodo(ctx)
+	return newList
 }
 
 func readJsonFile() []Todo {
@@ -122,7 +123,7 @@ type Todo struct {
 	Done  bool
 }
 type DeleteTodo struct {
-	ID string `form:"id"`
+	ID string
 }
 
 // var todos = []Todo{
